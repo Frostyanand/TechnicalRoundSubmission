@@ -73,8 +73,13 @@ const modifyRecord = async (entity, filters, updateData) => {
 
     let query = firestoreAdmin.collection(COLLECTION_NAME);
 
-    if (entity) {
-      query = query.where('entity', '==', normalizeEntity(entity));
+    // Treat 'records', 'database', 'all' as WILDCARDS (no filter)
+    const genericEntities = ['records', 'record', 'database', 'databases', 'all', 'everything', 'data'];
+    const normalized = normalizeEntity(entity);
+    const isGeneric = !entity || genericEntities.includes(normalized) || genericEntities.includes(entity?.toLowerCase());
+
+    if (entity && !isGeneric) {
+      query = query.where('entity', '==', normalized);
     }
 
     const filterKeys = filters ? Object.keys(filters).filter(key => key !== 'entity') : [];
@@ -121,8 +126,13 @@ const deleteRecord = async (entity, filters) => {
 
     let query = firestoreAdmin.collection(COLLECTION_NAME);
 
-    if (entity) {
-      query = query.where('entity', '==', normalizeEntity(entity));
+    // Treat 'records', 'database', 'all' as WILDCARDS (no filter)
+    const genericEntities = ['records', 'record', 'database', 'databases', 'all', 'everything', 'data'];
+    const normalized = normalizeEntity(entity);
+    const isGeneric = !entity || genericEntities.includes(normalized) || genericEntities.includes(entity?.toLowerCase());
+
+    if (entity && !isGeneric) {
+      query = query.where('entity', '==', normalized);
     }
 
     const filterKeys = filters ? Object.keys(filters).filter(key => key !== 'entity') : [];
@@ -165,8 +175,13 @@ const displayRecords = async (entity, filters, limit = 50) => {
 
     let query = firestoreAdmin.collection(COLLECTION_NAME);
 
-    if (entity) {
-      query = query.where('entity', '==', normalizeEntity(entity));
+    // Treat 'records', 'database', 'all' as WILDCARDS (no filter)
+    const genericEntities = ['records', 'record', 'database', 'databases', 'all', 'everything', 'data'];
+    const normalized = normalizeEntity(entity);
+    const isGeneric = !entity || genericEntities.includes(normalized) || genericEntities.includes(entity?.toLowerCase());
+
+    if (entity && !isGeneric) {
+      query = query.where('entity', '==', normalized);
     }
 
     if (filters) {
@@ -194,8 +209,8 @@ const displayRecords = async (entity, filters, limit = 50) => {
 
     // Create summary
     let message = "";
-    if (count === 0) message = `No ${entity || 'records'} found.`;
-    else message = `Found ${count} ${entity || 'records'}.`;
+    if (count === 0) message = `No records found${entity && !isGeneric ? ` for ${entity}` : ''}.`;
+    else message = `Found ${count} records${entity && !isGeneric ? ` in ${entity}` : ''}.`;
 
     return { message, data: records };
 
@@ -211,10 +226,6 @@ const displayRecords = async (entity, filters, limit = 50) => {
   }
 };
 
-/**
- * Count records
- * Returns { message: string, data: null }
- */
 const countRecords = async (entity, filters) => {
   try {
     if (!isFirestoreReady()) throw new Error('Firestore is not properly initialized.');

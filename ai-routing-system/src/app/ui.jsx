@@ -285,7 +285,7 @@ const AIChatWindow = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start animate-message-in">
-                <div className="bg-white/95 px-7 py-5 rounded-3xl rounded-bl-md shadow-lg border border-gray-200/50">Thinking...</div>
+                <div className="bg-white/95 px-7 py-5 rounded-3xl rounded-bl-md shadow-lg border border-gray-200/50 text-gray-800 font-medium">Thinking...</div>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -301,7 +301,7 @@ const AIChatWindow = () => {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask about weather or database..."
-              className="w-full px-6 py-4 bg-gray-50 border-2 rounded-3xl resize-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-6 py-4 bg-gray-50 border-2 rounded-3xl resize-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500 font-medium"
               style={{ minHeight: '56px', maxHeight: '140px' }}
             />
             <button

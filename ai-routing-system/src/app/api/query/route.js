@@ -105,7 +105,6 @@ export async function POST(request) {
         { status: 200 }
       );
     }
-
     // Tool Execution
     let result;
     const { tool, action, parameters = {} } = routingInstructions;
@@ -125,7 +124,22 @@ export async function POST(request) {
         result = await getWeather(location);
       } else if (tool === 'database') {
         const entity = parameters?.entity || 'records';
-        result = await handleDatabaseOperation(action, entity, parameters);
+        const dbResult = await handleDatabaseOperation(action, entity, parameters);
+
+        // Extract message string
+        result = dbResult.message || "Operation completed";
+
+        if (dbResult.data) {
+          return NextResponse.json(
+            {
+              response: result,
+              data: dbResult.data,
+              entity: entity,
+              remaining: rateLimitResult.remaining - 1,
+            },
+            { status: 200 }
+          );
+        }
       } else {
         throw new Error(`Unknown tool: ${tool}`);
       }
@@ -146,6 +160,7 @@ export async function POST(request) {
       },
       { status: 200 }
     );
+
   } catch (error) {
     console.error('Unexpected error in query endpoint:', error);
     return NextResponse.json(
