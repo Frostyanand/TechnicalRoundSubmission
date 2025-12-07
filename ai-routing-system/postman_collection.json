@@ -1,0 +1,1222 @@
+{
+	"info": {
+		"_postman_id": "ai-routing-system-tests",
+		"name": "AI Routing System - Complete Test Suite",
+		"description": "Comprehensive test collection for AI Routing System API\n\n## Setup Instructions:\n1. Import this collection into Postman\n2. Set the `base_url` variable (default: http://localhost:3000)\n3. Set the `auth_token` variable with your Firebase ID token\n4. Run the collection in order for best results\n\n## Test Flow:\n1. Authentication Tests\n2. Weather Queries\n3. Database Queries (CRUD)\n4. Error Handling Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication Tests",
+			"item": [
+				{
+					"name": "Missing Authorization Header",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error message is present\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Tell me the weather in New York\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Invalid Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error message indicates invalid token\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include(\"token\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid_token_12345"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Tell me the weather in New York\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Valid Request (Save Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains result\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.exist;",
+									"    pm.expect(jsonData.remaining).to.exist;",
+									"});",
+									"",
+									"// Save remaining requests for rate limit test",
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"initial_remaining\", jsonData.remaining);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Tell me the weather in London\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Weather Queries",
+			"item": [
+				{
+					"name": "Weather - San Francisco",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is in English\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('weather');",
+									"});",
+									"",
+									"pm.test(\"Response contains temperature\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.match(/\\d+°C|\\d+°F/);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Tell me the weather in San Francisco\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Weather - New York",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response mentions New York\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('new york');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"What's the temperature in New York?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Weather - Tokyo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is valid\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.length).to.be.above(10);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"How's the weather in Tokyo?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Weather - Invalid Location",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 (graceful handling)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates issue\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"What's the weather in XyzInvalidCity123?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Database Queries - READ",
+			"item": [
+				{
+					"name": "Count All Employees",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is in English\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('employee');",
+									"});",
+									"",
+									"pm.test(\"Response contains count\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.match(/\\d+/);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"How many employees are there?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "List All Orders",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response mentions orders\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('order');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"List all orders\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Orders Over $500",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response mentions orders\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('order');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"List all orders over $500\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Employees Joined Last Month",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is valid\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"How many employees joined last month?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Show All Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response mentions products\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('product');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Show me all products\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Database Queries - CREATE",
+			"item": [
+				{
+					"name": "Add New Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates success\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('success');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('employee');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Add a new employee named Sarah Johnson with email sarah.johnson@company.com in the HR department\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Add New Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates success\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Add a new order for $750\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Database Queries - UPDATE",
+			"item": [
+				{
+					"name": "Update Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates update\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('update');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Update employee John Doe's salary to $80000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Database Queries - DELETE",
+			"item": [
+				{
+					"name": "Delete Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates deletion\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('delete');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Delete product PROD-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Error Handling Tests",
+			"item": [
+				{
+					"name": "Empty Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message is present\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Missing Query Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Invalid HTTP Method (GET)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 405\", function () {",
+									"    pm.response.to.have.status(405);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Insufficient Info - Weather (No Location)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response asks for clarification\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('location');",
+									"});",
+									"",
+									"pm.test(\"Response includes capabilities list\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('weather');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('database');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"What's the weather?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Insufficient Info - Database (No Details)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response asks for clarification\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('information');",
+									"});",
+									"",
+									"pm.test(\"Response includes capabilities list\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('database');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Add a new order\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				},
+				{
+					"name": "Insufficient Info - Vague Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response asks for clarification\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('clarify');",
+									"});",
+									"",
+									"pm.test(\"Response includes capabilities list\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('weather');",
+									"    pm.expect(jsonData.response.toLowerCase()).to.include('database');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Help me\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Rate Limiting Test",
+			"item": [
+				{
+					"name": "Rate Limit Test (11 requests)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This will make 11 requests to test rate limiting",
+									"// Note: Run this test manually or use Postman's collection runner"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if we hit rate limit (11th request should fail)",
+									"if (pm.info.iteration === 10) {",
+									"    pm.test(\"Status code is 429 (Rate Limited)\", function () {",
+									"        pm.response.to.have.status(429);",
+									"    });",
+									"    ",
+									"    pm.test(\"Rate limit error message\", function () {",
+									"        const jsonData = pm.response.json();",
+									"        pm.expect(jsonData.error).to.include(\"rate limit\");",
+									"        pm.expect(jsonData.remaining).to.exist;",
+									"    });",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Tell me the weather in Paris\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"query"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "YOUR_FIREBASE_ID_TOKEN_HERE",
+			"type": "string"
+		}
+	]
+}
+
