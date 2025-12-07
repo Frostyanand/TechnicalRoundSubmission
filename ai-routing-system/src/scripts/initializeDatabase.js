@@ -1,8 +1,5 @@
 // src/scripts/initializeDatabase.js
 // Script to initialize Firestore with sample data
-// Run this once to populate the database with initial records
-
-// Load environment variables from .env file
 require('dotenv').config();
 
 const { firestoreAdmin } = require('../lib/firebase/firebase');

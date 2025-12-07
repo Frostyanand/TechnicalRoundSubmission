@@ -1,10 +1,5 @@
 // src/controllers/llmRouterController.js
 // LLM Router Controller - Uses Gemini to determine routing instructions
-// 
-// Environment Variable Required:
-// - GEMINI_API_KEY: Google Gemini API key (must be set in .env or .env.local)
-
-// Ensure .env is loaded (Next.js should do this automatically for API routes)
 if (typeof window === 'undefined') {
   try {
     const path = require('path');
@@ -18,18 +13,14 @@ if (typeof window === 'undefined') {
       require('dotenv').config({ path: envPath });
     }
   } catch (e) {
-    // dotenv loading is optional if Next.js handles it
   }
 }
 
-// Initialize Gemini - we will initialize new instances for each key rotation
+// Initialize Gemini 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 /**
  * Get all available API keys from environment variables
- * Supports:
- * - GEMINI_API_KEY (single or comma-separated)
- * - GEMINI_API_KEY_1, GEMINI_API_KEY_2, etc. (fallback keys)
  * @returns {string[]} Array of unique API keys
  */
 const getAvailableApiKeys = () => {
@@ -230,7 +221,6 @@ Respond with ONLY the JSON object, no additional text.`;
       throw new Error(`All keys and models failed. Last error: ${lastError?.message || 'Unknown error'}`);
     }
 
-    // Extract JSON from response (handle cases where LLM adds extra text)
     // Try to find JSON object, handling markdown code blocks
     let jsonText = text.trim();
 

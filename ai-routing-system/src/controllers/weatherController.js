@@ -1,11 +1,6 @@
 // src/controllers/weatherController.js
 // Weather Tool Controller - Fetches weather data from OpenWeatherMap API
-//
-// Environment Variable Required:
 // - OPENWEATHER_API_KEY: OpenWeatherMap API key (optional, falls back to mock data if not set)
-//   Must be set in .env or .env.local
-
-// Ensure .env is loaded (Next.js should do this automatically for API routes)
 if (typeof window === 'undefined') {
   try {
     const path = require('path');
@@ -19,7 +14,6 @@ if (typeof window === 'undefined') {
       require('dotenv').config({ path: envPath });
     }
   } catch (e) {
-    // dotenv loading is optional if Next.js handles it
   }
 }
 
@@ -36,7 +30,6 @@ const getWeather = async (location) => {
       throw new Error('Location is required');
     }
 
-    // Fetch API key from environment variables
     const apiKey = process.env.OPENWEATHER_API_KEY;
     if (!apiKey) {
       // Fallback to mock data if API key is not configured

@@ -10,7 +10,7 @@ const normalizeEntity = (entity) => {
   if (!entity) return null;
   let normalized = entity.toLowerCase().trim();
   if (normalized.endsWith('y')) {
-    return normalized.slice(0, -1) + 'ies'; // e.g. company -> companies (simple heuristic)
+    return normalized.slice(0, -1) + 'ies'; 
   }
   if (!normalized.endsWith('s')) {
     normalized += 's';
@@ -18,14 +18,7 @@ const normalizeEntity = (entity) => {
   return normalized;
 };
 
-// ... (imports remain)
 
-
-
-/**
- * Add a new record
- * Returns { message: string, data: Array }
- */
 const addRecord = async (entity, data) => {
   try {
     if (!isFirestoreReady()) {
@@ -59,10 +52,6 @@ const addRecord = async (entity, data) => {
   }
 };
 
-/**
- * Modify an existing record
- * Returns { message: string, data: Array }
- */
 const modifyRecord = async (entity, filters, updateData) => {
   try {
     if (!isFirestoreReady()) throw new Error('Firestore is not properly initialized.');
@@ -139,10 +128,7 @@ const modifyRecord = async (entity, filters, updateData) => {
   }
 };
 
-/**
- * Delete a record
- * Returns { message: string, data: null }
- */
+
 const deleteRecord = async (entity, filters) => {
   try {
     if (!isFirestoreReady()) throw new Error('Firestore is not properly initialized.');
@@ -204,10 +190,6 @@ const deleteRecord = async (entity, filters) => {
   }
 };
 
-/**
- * Display/List records
- * Returns { message: string, data: Array }
- */
 const displayRecords = async (entity, filters, limit = 50) => {
   try {
     if (!isFirestoreReady()) throw new Error('Firestore is not properly initialized.');
@@ -293,9 +275,7 @@ const countRecords = async (entity, filters) => {
   }
 };
 
-/**
- * Main database handler
- */
+
 const handleDatabaseOperation = async (action, entity, parameters) => {
   const { filters = {}, data = {} } = parameters || {};
 

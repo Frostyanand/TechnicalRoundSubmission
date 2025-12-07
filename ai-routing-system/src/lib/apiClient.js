@@ -7,31 +7,24 @@ const auth = authClient;
 
 // Create the base Axios instance
 const apiClient = axios.create({
-  baseURL: '/api', // Your Next.js API routes are located at /api
+  baseURL: '/api', 
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 second timeout (Increased slightly as LLM calls can take longer)
+  timeout: 30000, // 30 second timeout 
 });
 
-// --- Request Interceptor: Inject Firebase ID Token ---
 apiClient.interceptors.request.use(
   async (config) => {
-    // Check if a user is currently logged in
     const user = auth.currentUser;
-
     if (user) {
       try {
-        // Get the current Firebase ID token. This handles token refreshing automatically.
-        const token = await user.getIdToken();
-        
+        const token = await user.getIdToken();        
         // Attach the token to the Authorization header
         // This token is verified on the server-side to get the user's UID for rate limiting
         config.headers.Authorization = `Bearer ${token}`;
       } catch (error) {
         console.error('Error getting Firebase ID token:', error);
-        // If getting the token fails, the request will proceed without it, 
-        // but the server should reject it later if authentication is required.
       }
     }
     return config;
@@ -42,7 +35,6 @@ apiClient.interceptors.request.use(
 );
 
 
-// --- Response Interceptor: Handle API Errors ---
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {

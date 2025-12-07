@@ -9,10 +9,6 @@ import { getWeather } from '../../../controllers/weatherController';
 import { handleDatabaseOperation } from '../../../controllers/databaseController';
 import { getWeatherHelp, getDatabaseHelp, getGeneralHelp } from '../../../lib/capabilities';
 
-/**
- * POST /api/query
- * Main endpoint that processes natural language queries
- */
 export async function POST(request) {
   try {
     // Authentication Verification

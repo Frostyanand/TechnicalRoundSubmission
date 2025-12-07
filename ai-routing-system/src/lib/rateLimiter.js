@@ -1,7 +1,4 @@
 // src/lib/rateLimiter.js
-// Simple in-memory rate limiter using LRU cache
-// For production, consider using Redis or a more robust solution
-
 const { LRUCache } = require('lru-cache');
 
 // Rate limit configuration
@@ -16,7 +13,7 @@ const rateLimitCache = new LRUCache({
 });
 
 /**
- * Check if a request should be rate limited
+ * Check for rate limiting
  * @param {string} email - User's email address
  * @returns {Object} - { allowed: boolean, remaining: number, resetTime: number }
  */
