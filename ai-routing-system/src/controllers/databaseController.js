@@ -71,6 +71,29 @@ const modifyRecord = async (entity, filters, updateData) => {
       return { message: 'No update data provided.', data: null };
     }
 
+    // Check for ID-based modification first
+    const idKey = filters ? Object.keys(filters).find(k => ['id', '_id', 'documentId'].includes(k.toLowerCase())) : null;
+
+    if (idKey && filters[idKey]) {
+      const docId = filters[idKey];
+      const docRef = firestoreAdmin.collection(COLLECTION_NAME).doc(docId);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return { message: `No record found with ID "${docId}".`, data: null };
+      }
+
+      await docRef.update({
+        ...updateData,
+        updatedAt: new Date(),
+      });
+
+      return {
+        message: `Successfully updated record with ID "${docId}".`,
+        data: [{ id: docId, ...doc.data(), ...updateData }]
+      };
+    }
+
     let query = firestoreAdmin.collection(COLLECTION_NAME);
 
     // Treat 'records', 'database', 'all' as WILDCARDS (no filter)
@@ -123,6 +146,24 @@ const modifyRecord = async (entity, filters, updateData) => {
 const deleteRecord = async (entity, filters) => {
   try {
     if (!isFirestoreReady()) throw new Error('Firestore is not properly initialized.');
+
+    // Check for ID-based deletion first (bypass entity check if ID is present)
+    const idKey = filters ? Object.keys(filters).find(k => ['id', '_id', 'documentId'].includes(k.toLowerCase())) : null;
+
+    if (idKey && filters[idKey]) {
+      const docId = filters[idKey];
+      console.log(`Attempting to delete by ID: ${docId}`);
+
+      const docRef = firestoreAdmin.collection(COLLECTION_NAME).doc(docId);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return { message: `No record found with ID "${docId}".`, data: null };
+      }
+
+      await docRef.delete();
+      return { message: `Successfully deleted record with ID "${docId}".`, data: null };
+    }
 
     let query = firestoreAdmin.collection(COLLECTION_NAME);
 

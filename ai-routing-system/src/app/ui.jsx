@@ -79,7 +79,17 @@ const DataCanvas = ({ data, entity, onClose }) => {
                 <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
                   {columns.map((col) => (
                     <td key={col} className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
-                      {typeof row[col] === 'object' ? JSON.stringify(row[col]) : row[col]}
+                      {(() => {
+                        const val = row[col];
+                        if (val && typeof val === 'object') {
+                          // Handle Firestore Timestamp
+                          if (val._seconds !== undefined) {
+                            return new Date(val._seconds * 1000).toLocaleString();
+                          }
+                          return JSON.stringify(val);
+                        }
+                        return val;
+                      })()}
                     </td>
                   ))}
                 </tr>

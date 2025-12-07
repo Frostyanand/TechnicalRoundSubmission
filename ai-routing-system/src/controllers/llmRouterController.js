@@ -156,9 +156,9 @@ IMPORTANT:
 - If the user talks about "customer", "amount", INFER "orders".
 - **Goal**: Do NOT ask for entity type if you can confidently infer it from the fields provided.
 
-When "insufficientInfo" is true:
 - You MUST identify exactly what information is missing in "missingInfo".
 - You MUST return a "guidedResponse" that lists the available functionality related to the user's intent to help them correct their query.
+- **Exception**: If the user provides a specific **ID** (e.g., "id 123", "record with id X"), set "count" or "insufficientInfo" to false. Set "entity" to "record" if not specified. ID is sufficient to identify a record.
 - **Exception**: If you can infer the entity and have required data, set "insufficientInfo" to false and proceed.
 
 Analyze the query and respond with ONLY a valid JSON object. 
