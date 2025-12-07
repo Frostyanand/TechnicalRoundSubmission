@@ -65,7 +65,6 @@ apiClient.interceptors.response.use(
       }
     }
     
-    // Return the promise rejection so the calling code can catch it
     return Promise.reject(error);
   }
 );

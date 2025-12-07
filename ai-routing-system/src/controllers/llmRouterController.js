@@ -58,16 +58,11 @@ const getAvailableApiKeys = () => {
   return Array.from(keys);
 };
 
-// List of models to try in order (preferred order)
-// Tested and verified working models (December 7, 2025)
-// ✅ Confirmed working on free tier:
-//   - gemini-2.5-flash-lite (fastest, ideal for routing)
-//   - gemini-2.5-flash (backup, slightly more capable)
-//   - gemini-2.0-flash (fallback if quota resets)
+// List of models to try in reversed priority order for fallback
 const MODEL_FALLBACK_LIST = [
-  "gemini-2.5-flash-lite",      // ✅ WORKS - Fastest and most efficient
-  "gemini-2.5-flash",           // ✅ WORKS - Backup with more capabilities
-  "gemini-2.0-flash"            // Fallback - May hit quota during high usage
+  "gemini-2.5-flash-lite",      // Primary: Fast and efficient
+  "gemini-2.5-flash",           // Secondary: Higher capability backup
+  "gemini-2.0-flash"            // Fallback: Usage during high load
 ];
 
 /**
@@ -85,11 +80,11 @@ const tryModel = async (apiKey, modelName, prompt) => {
     const response = await result.response;
     return response.text();
   } catch (error) {
-    // Check for model not found errors (404, model not available, etc.)
+    // Handle specific error cases for routing logic
     const errorMessage = error.message || '';
     const errorStatus = error.status || error.response?.status || error.statusCode;
 
-    // Rethrow 429 errors specifically to trigger key rotation
+    // Rethrow quota errors to trigger key rotation
     if (errorStatus === 429 || errorMessage.includes('429') || errorMessage.includes('quota')) {
       throw new Error(`QUOTA_EXCEEDED: ${modelName}`);
     }
@@ -103,7 +98,7 @@ const tryModel = async (apiKey, modelName, prompt) => {
     ) {
       throw new Error(`MODEL_NOT_FOUND: ${modelName}`);
     }
-    // For other errors, rethrow
+
     throw error;
   }
 };
@@ -186,33 +181,32 @@ Examples:
 
 Respond with ONLY the JSON object, no additional text.`;
 
-    // Try Keys -> Models nested loop
+    // Strategy: Nested retry loop (Keys -> Models) to handle rate limits
     let text = null;
     let lastError = null;
     let usedModel = null;
     let usedKeyIndex = -1;
 
-    // OUTER LOOP: Iterate through keys
+    // Iterate through available API Keys
     for (let i = 0; i < apiKeys.length; i++) {
       const apiKey = apiKeys[i];
 
-      // INNER LOOP: Iterate through models
+      // Iterate through Models
       for (const modelName of MODEL_FALLBACK_LIST) {
         try {
           text = await tryModel(apiKey, modelName, prompt);
           usedModel = modelName;
           usedKeyIndex = i;
-          console.log(`Successfully used model: ${modelName} with key index ${i}`);
-          break; // Break model loop
+          // console.log(`Successfully used model: ${modelName} with key index ${i}`);
+          break; // Success, exit model loop
         } catch (error) {
           lastError = error;
           if (error.message?.includes('QUOTA_EXCEEDED')) {
             console.log(`Quota exceeded for model ${modelName} on key ${i}, checking next...`);
-            // If even the last model fails with quota, we break inner loop to try next key
-            continue;
+            continue; // Try next model/key
           } else if (error.message?.includes('MODEL_NOT_FOUND')) {
             console.log(`Model ${modelName} not found, trying next...`);
-            continue; // Try next model on same key
+            continue;
           } else {
             console.warn(`Error with model ${modelName}:`, error.message);
             continue;
@@ -220,8 +214,8 @@ Respond with ONLY the JSON object, no additional text.`;
         }
       }
 
-      if (text) break; // Break key loop if successful
-      console.log(`Key ${i} exhausted or failed, trying next key...`);
+      if (text) break; // Success, exit key loop
+      console.log(`Key ${i} exhausted, trying next...`);
     }
 
     if (!text) {

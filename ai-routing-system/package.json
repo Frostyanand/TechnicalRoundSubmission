@@ -8,19 +8,19 @@
     "start": "next start",
     "lint": "eslint",
     "init-db": "node src/scripts/initializeDatabase.js",
-    "test-models": "node src/scripts/testModels.js",
     "test-models": "node src/scripts/testModels.js"
   },
   "dependencies": {
-    "next": "16.0.7",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "@google/generative-ai": "^0.21.0",
+    "@opentelemetry/api": "^1.9.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.5",
     "firebase": "^10.13.0",
     "firebase-admin": "^12.0.0",
-    "@google/generative-ai": "^0.21.0",
-    "axios": "^1.7.0",
     "lru-cache": "^11.0.0",
-    "dotenv": "^16.4.5"
+    "next": "16.0.7",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

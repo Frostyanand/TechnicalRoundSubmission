@@ -15,7 +15,7 @@ import { getWeatherHelp, getDatabaseHelp, getGeneralHelp } from '../../../lib/ca
  */
 export async function POST(request) {
   try {
-    // 1. Extract and verify authentication
+    // Authentication Verification
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function POST(request) {
       );
     }
 
-    // 2. Check rate limiting
+    // Rate Limiting
     const rateLimitResult = checkRateLimit(userEmail);
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
@@ -56,7 +56,7 @@ export async function POST(request) {
       );
     }
 
-    // 3. Parse request body
+    // Request Validation
     const body = await request.json();
     const { query } = body;
 
@@ -67,7 +67,7 @@ export async function POST(request) {
       );
     }
 
-    // 4. Route query using LLM
+    // Intelligence Routing
     let routingInstructions;
     try {
       routingInstructions = await routeQuery(query);
@@ -79,7 +79,7 @@ export async function POST(request) {
       );
     }
 
-    // 5. Check if insufficient information was provided
+    // Context Analysis & Guided Assistance
     if (routingInstructions.insufficientInfo === true) {
       let helpMessage;
       const { tool, missingInfo, guidedResponse } = routingInstructions;
@@ -87,7 +87,7 @@ export async function POST(request) {
       if (guidedResponse) {
         helpMessage = guidedResponse;
       } else {
-        // Fallback to static help if LLM didn't provide guidance
+        // Use static fallback if guided response is unavailable  
         if (tool === 'weather') {
           helpMessage = getWeatherHelp();
         } else if (tool === 'database') {
@@ -106,16 +106,14 @@ export async function POST(request) {
       );
     }
 
-    // 6. Execute appropriate tool based on routing instructions
+    // Tool Execution
     let result;
     const { tool, action, parameters = {} } = routingInstructions;
 
     try {
       if (tool === 'weather') {
-        // Handle weather queries
         const location = parameters?.location || parameters?.city || 'Unknown';
         if (!location || location === 'Unknown') {
-          // This shouldn't happen if LLM routing is working correctly, but handle it gracefully
           return NextResponse.json(
             {
               response: getWeatherHelp(),
@@ -126,7 +124,6 @@ export async function POST(request) {
         }
         result = await getWeather(location);
       } else if (tool === 'database') {
-        // Handle database queries
         const entity = parameters?.entity || 'records';
         result = await handleDatabaseOperation(action, entity, parameters);
       } else {
@@ -134,7 +131,6 @@ export async function POST(request) {
       }
     } catch (error) {
       console.error('Tool execution error:', error);
-      // Provide more user-friendly error messages
       const errorMessage = error.message || 'An unknown error occurred';
       return NextResponse.json(
         { error: `Failed to execute ${tool} operation: ${errorMessage}` },

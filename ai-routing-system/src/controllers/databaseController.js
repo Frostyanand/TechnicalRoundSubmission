@@ -189,9 +189,9 @@ const displayRecords = async (entity, filters, limit = 10) => {
     }
 
     // Log the operation for debugging
-    console.log(`🔍 Firestore operation: displayRecords for entity="${entity}"`);
-    console.log(`   Collection: ${COLLECTION_NAME}`);
-    console.log(`   Firestore instance: ${firestoreAdmin ? 'exists' : 'null'}`);
+    console.log(`Firestore operation: displayRecords for entity="${entity}"`);
+    console.log(`Collection: ${COLLECTION_NAME}`);
+    console.log(`Firestore instance: ${firestoreAdmin ? 'active' : 'null'}`);
 
     let query = firestoreAdmin.collection(COLLECTION_NAME);
 
@@ -265,28 +265,19 @@ const displayRecords = async (entity, filters, limit = 10) => {
       return `Found ${count} ${entityName} matching your criteria.`;
     }
   } catch (error) {
-    console.error('❌ Error displaying records:', error);
+    console.error('Error displaying records:', error);
     console.error('   Error code:', error.code);
     console.error('   Error message:', error.message);
     console.error('   Error details:', error.details);
 
     // Handle authentication errors with detailed guidance
     if (error.code === 16 || error.message?.includes('UNAUTHENTICATED') || error.message?.includes('invalid authentication credentials')) {
-      console.error('🔍 Authentication Error - Possible causes:');
-      console.error('   1. Service account key is for a different Firebase project');
-      console.error('   2. Service account was deleted or disabled in Firebase Console');
-      console.error('   3. Firestore API is not enabled for this project');
-      console.error('   4. Service account lacks Firestore permissions');
-      console.error('   5. FIREBASE_PROJECT_ID in .env does not match the service account project');
-      console.error('');
-      console.error('📋 To fix this:');
-      console.error('   1. Go to Firebase Console → Project Settings → Service Accounts');
-      console.error('   2. Verify the service account email matches FIREBASE_CLIENT_EMAIL in .env');
-      console.error('   3. Ensure the service account has "Cloud Datastore User" or "Firebase Admin" role');
-      console.error('   4. Go to Firebase Console → Firestore Database → ensure it\'s enabled');
-      console.error('   5. Verify FIREBASE_PROJECT_ID matches your Firebase project ID');
-      console.error('   6. Generate a new service account key if needed');
-      throw new Error('Firebase authentication failed. The service account credentials may be invalid, expired, or lack Firestore permissions. Check the console logs above for detailed troubleshooting steps.');
+      console.error('Authentication Error. Potential causes:');
+      console.error('- Service account key mismatch (project ID or email)');
+      console.error('- Firestore API disabled in Google Cloud Console');
+      console.error('- Missing Permissions (Cloud Datastore User role)');
+
+      throw new Error('Firebase authentication failed. Please verify service account credentials and permissions in the Firebase Console.');
     }
 
     // Handle Firestore index errors gracefully
