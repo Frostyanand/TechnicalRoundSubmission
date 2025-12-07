@@ -150,9 +150,16 @@ IMPORTANT:
   - Example: "add product" -> "products"
   - Example: "list user" -> "users"
 
+**Inference Rules (Smart Context)**:
+- If the user provides data typical of a specific entity (e.g., "salary", "department"), INFER the entity as "employees" if not specified.
+- If the user talks about "price", "stock", INFER "products".
+- If the user talks about "customer", "amount", INFER "orders".
+- **Goal**: Do NOT ask for entity type if you can confidently infer it from the fields provided.
+
 When "insufficientInfo" is true:
 - You MUST identify exactly what information is missing in "missingInfo".
 - You MUST return a "guidedResponse" that lists the available functionality related to the user's intent to help them correct their query.
+- **Exception**: If you can infer the entity and have required data, set "insufficientInfo" to false and proceed.
 
 Analyze the query and respond with ONLY a valid JSON object. 
 Do not include comments or non-JSON text in the response.
@@ -178,6 +185,7 @@ Examples:
 - "What's the weather?" → {"tool": "weather", "action": "check", "parameters": {}, "insufficientInfo": true, "missingInfo": "location/city name", "guidedResponse": "I can specifically check weather if you provide a city name. For example: 'Weather in London'.", "intent": "Get weather information"}
 - "Add a new order" → {"tool": "database", "action": "add", "parameters": {"entity": "orders", "data": {}}, "insufficientInfo": true, "missingInfo": "order details like amount, customer name", "guidedResponse": "To add an order, I need details. Try: 'Add order for $50 by John Doe'.", "intent": "Add new order"}
 - "Display database" → {"tool": "database", "action": "display", "parameters": {"entity": null}, "insufficientInfo": false, "intent": "List all records"}
+- "Add Anurag salary 500 dollars" → {"tool": "database", "action": "add", "parameters": {"entity": "employees", "data": {"name": "Anurag", "salary": 500}}, "insufficientInfo": false, "intent": "Add inferred employee"}
 
 Respond with ONLY the JSON object, no additional text.`;
 
